@@ -14,16 +14,47 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * This class uploads files into DF Studio.
+ *
+ * <pre>
+ *    //This is just an interface with only two methods, feel free to implement your own
+ *    HttpClient http = new JavaHttpClient();
+ *
+ *    String dfstudioUrl = "https://enterprise.dfstudio.com";  //the root url of the dfstudio cluster you sign into
+ *    String account  = "msgile";  //short account name
+ *    String username = "msgile";  //username/login name
+ *    String password = "##";
+ *    DfsUploadClient client = DfsUploadClient.newUpload(http, dfstudioUrl, account, username, password);
+ *
+ *    String folder   = "landscapes"; //optional, can be empty or null, project will be in root folder
+ *    String project  = "highlands";
+ *    String setup    = "walking path";  //optional, can be empty or null
+ *    String filename = "p1001-mountain-trail.jpg";
+ *    InputStream stream = getClass().getResourceAsStream(filename);
+ *
+ *    client.uploadFile(folder,project,setup,filename,stream);
+ * </pre>
+ *
+ *
+ *
  * @author msgile
  * @author $LastChangedBy$
  * @version $Revision$  $LastChangedDate$
  * @since 2/26/15
  */
 public class DfsUploadClient {
-  public static DfsUploadClient newUpload(HttpClient client, String dfstudioUrl, String username, String account, String password) {
+  /**
+   *
+   * @param client Required {@see JavaHttpClient}
+   * @param dfstudioUrl Required
+   * @param accountShortName Required
+   * @param username Required
+   * @param password Required, plain text password
+   */
+  public static DfsUploadClient newUpload(HttpClient client, String dfstudioUrl, String accountShortName, String username, String password) {
     Map<String,String> authenticationData = new HashMap<String,String>(6);
+    authenticationData.put("account", accountShortName);
     authenticationData.put("username",username);
-    authenticationData.put("account",account);
     authenticationData.put("password",password);
     return new DfsUploadClient(client, dfstudioUrl,authenticationData);
   }
