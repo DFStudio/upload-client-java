@@ -36,6 +36,7 @@ public class JavaHttpClient implements HttpClient {
   }
 
   static String encodeParameters(Map<String, String> parameters, String charset) {
+    if (parameters == null || parameters.size() == 0) return "";
     try {
       StringBuilder builder = new StringBuilder();
       boolean isFirst = true;

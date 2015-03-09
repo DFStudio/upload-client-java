@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -75,14 +74,13 @@ public class DfsUploadClient {
     if ( authenticateUrl == null ) {
       synchronized (lock)  {
         if ( authenticateUrl == null ) {
-          HttpResponse response = client.post(baseUrl+"/rest/v3/session.json",authenticationData);
+          HttpResponse response = client.post(baseUrl+"/rest/v3/session.json", authenticationData);
           if ( response.getStatusCode() != 200 ) {
             throw new IOException("Unable to Authenticate\nCode="+response.getStatusCode()+"\nMessage="+response.getMessageAsString() );
           }
           authenticateUrl = response.getMessageAsString();
           int pos = authenticateUrl.indexOf(".json");
           authenticateUrl = authenticateUrl.substring(1,pos);
-
         }
       }
     }
@@ -105,22 +103,29 @@ public class DfsUploadClient {
 
   public void uploadFile(String path, String setup, InputStream source) throws IOException {
     String authenticateUrl = getAuthenticateUrl();
-    String imageUrl = String.format("%s/path/%s",authenticateUrl,path);
+
+    //first, issue an upload request with the image and setup information
+    String imageUploadRequestUrl = String.format("%s/path/%s", authenticateUrl, path);
     Map<String,String> parameters = new HashMap<String,String>(3);
     if ( setup != null && ! setup.isEmpty()) {
-      parameters.put("setup",setup);
+      parameters.put("setup", setup);
     }
     parameters.put("action","uploadurlrequest");
     parameters.put("type","image");
-    HttpResponse response = client.post(imageUrl,parameters);
+    HttpResponse response = client.post(imageUploadRequestUrl, parameters);
     validateResponse(response);
+
+    //get the upload url, content type and callback URL returned from the upload request
     String responseMessage = response.getMessageAsString();
-    String uploadUrl = extractJsonMapValue(responseMessage,"uploadUrl");
-    String contentType = extractJsonMapValue(responseMessage,"uploadContentType");
-    String callbackUrl = extractJsonMapValue(responseMessage,"uploadOnCompleteUrl");
+    String uploadUrl = extractJsonMapValue(responseMessage, "uploadUrl");
+    String contentType = extractJsonMapValue(responseMessage, "uploadContentType");
+    String callbackUrl = extractJsonMapValue(responseMessage, "uploadOnCompleteUrl");
+    //upload the image
     response = client.put(uploadUrl, contentType, source);
     validateResponse(response);
-    response = client.post(callbackUrl,new TreeMap<String,String>());
+
+    //after the image has been uploaded, post to the callback url to notify of the successfully completed upload
+    response = client.post(callbackUrl, new HashMap<String,String>());
     validateResponse(response);
   }
 
