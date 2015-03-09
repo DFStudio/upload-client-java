@@ -13,8 +13,8 @@ String dfstudioUrl = "https://#YOURHOST#.dfstudio.com";
 String username = "#USERNAME#";  //username
 String account  = "#ACCOUNT#";  //short name
 String password = "#PASSWORD#";
-HttpClient http = new JavaHttpClient();
-DfsUploadClient client = DfsUploadClient.newUpload(dfstudioUrl, account, username, password);
+HttpClient httpClient = new JavaHttpClient();
+DfsUploadClient dfsUploadClient = DfsUploadClient.newUpload(httpClient, dfstudioUrl, account, username, password);
 
 String folder   = "landscapes"; //optional, can be empty or null, project will be in root folder
 String project  = "highlands";
@@ -22,5 +22,5 @@ String setup    = "walking path";  //optional, can be empty or null
 String filename = "p1001-mountain-trail.jpg";
 InputStream stream = getClass().getResourceAsStream("p1001-mountain-trail.jpg");
 
-client.uploadFile(folder, project, setup, filename, stream);
+dfsUploadClient.uploadFile(folder, project, setup, filename, stream);
 ```
