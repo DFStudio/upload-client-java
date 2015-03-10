@@ -13,16 +13,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * This class uploads files into DF Studio.
+ * This class uploads files into DF Studio. This client does not do retry, the HttpClient should attempt this.
  *
  * <pre>
  *    //This is just an interface with only two methods, feel free to implement your own
  *    HttpClient http = new JavaHttpClient();
  *
- *    String dfstudioUrl = "https://enterprise.dfstudio.com";  //the root url of the dfstudio cluster you sign into
- *    String account  = "msgile";  //short account name
- *    String username = "msgile";  //username/login name
- *    String password = "##";
+ *    String dfstudioUrl = "https://#BRAND#.dfstudio.com";  //the root url of the dfstudio cluster you sign into
+ *    String account  = "ACCOUNT";  //short account name
+ *    String username = "USERNAME";  //username/login name
+ *    String password = "PASSWORD";
  *    DfsUploadClient client = DfsUploadClient.newUpload(http, dfstudioUrl, account, username, password);
  *
  *    String folder   = "landscapes"; //optional, can be empty or null, project will be in root folder
@@ -129,9 +129,13 @@ public class DfsUploadClient {
     validateResponse(response);
   }
 
-  public static void validateResponse(HttpResponse response) throws IOException {
+  public void validateResponse(HttpResponse response) throws IOException {
     int code = response.getStatusCode();
     if ( 300 <= code ) {
+      if ( 408 == code ) {
+        //session expired
+        authenticateUrl = null;
+      }
       throw new IOException("Status Code:"+code+"\n"+response.getMessageAsString());
     }
   }
